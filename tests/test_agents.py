@@ -65,12 +65,15 @@ class TestAgents(unittest.TestCase):
                     node_budget=2000,
                 )
 
-    def test_factory_rejects_unimplemented(self) -> None:
-        """Unimplemented agent names raise ValueError."""
+    def test_qlearning_every_role_50_rounds(self) -> None:
+        """Q-learning agent (fallback without table) controls every role for 50 rounds."""
+        self._play("qlearning", 50)
+
+    def test_factory_rejects_unknown(self) -> None:
+        """Unknown agent names raise ValueError."""
         config = GameConfig(map_text=MAP)
         with self.assertRaises(ValueError):
-            make_agent("qlearning", 0, Role.ZOMBIE, config, private_rng(0, 0))
-
+            make_agent("not-an-agent", 0, Role.ZOMBIE, config, private_rng(0, 0))
 
 
 if __name__ == "__main__":

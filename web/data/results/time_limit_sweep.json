@@ -1,0 +1,75 @@
+{
+  "experiment": "time_limit_sweep",
+  "title": "Time-limit sweep",
+  "description": "max_rounds in {20, 40, 60, 100}.",
+  "group_keys": [
+    "max_rounds"
+  ],
+  "win_side": "humans",
+  "rows": [
+    {
+      "max_rounds": 100,
+      "games": 10,
+      "wins": 6,
+      "win_rate": 0.6,
+      "win_rate_lo": 0.3126695474501864,
+      "win_rate_hi": 0.8318224187964902,
+      "avg_rounds": 97.4,
+      "std_rounds": 4.5995168828427575,
+      "avg_nodes_expanded": 0.0,
+      "std_nodes_expanded": 0.0,
+      "avg_time_per_move": 0.0,
+      "std_time_per_move": 0.0,
+      "compare_role": "human",
+      "agent": "100"
+    },
+    {
+      "max_rounds": 20,
+      "games": 10,
+      "wins": 10,
+      "win_rate": 1.0,
+      "win_rate_lo": 0.7224598312333834,
+      "win_rate_hi": 1.0,
+      "avg_rounds": 20.0,
+      "std_rounds": 0.0,
+      "avg_nodes_expanded": 0.0,
+      "std_nodes_expanded": 0.0,
+      "avg_time_per_move": 0.0,
+      "std_time_per_move": 0.0,
+      "compare_role": "human",
+      "agent": "20"
+    },
+    {
+      "max_rounds": 40,
+      "games": 10,
+      "wins": 10,
+      "win_rate": 1.0,
+      "win_rate_lo": 0.7224598312333834,
+      "win_rate_hi": 1.0,
+      "avg_rounds": 40.0,
+      "std_rounds": 0.0,
+      "avg_nodes_expanded": 0.0,
+      "std_nodes_expanded": 0.0,
+      "avg_time_per_move": 0.0,
+      "std_time_per_move": 0.0,
+      "compare_role": "human",
+      "agent": "40"
+    },
+    {
+      "max_rounds": 60,
+      "games": 10,
+      "wins": 10,
+      "win_rate": 1.0,
+      "win_rate_lo": 0.7224598312333834,
+      "win_rate_hi": 1.0,
+      "avg_rounds": 60.0,
+      "std_rounds": 0.0,
+      "avg_nodes_expanded": 0.0,
+      "std_nodes_expanded": 0.0,
+      "avg_time_per_move": 0.0,
+      "std_time_per_move": 0.0,
+      "compare_role": "human",
+      "agent": "60"
+    }
+  ]
+}

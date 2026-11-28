@@ -46,17 +46,55 @@ class TestMain(unittest.TestCase):
         err = io.StringIO()
         with redirect_stderr(err), redirect_stdout(io.StringIO()):
             code = main_mod.main(
-                ["--map", str(ROOT / "maps" / "small.txt"), "--zombie-ai", "qlearning", "--quiet"]
+                ["--map", str(ROOT / "maps" / "small.txt"), "--zombie-ai", "not-an-agent", "--quiet"]
             )
         self.assertEqual(code, 2)
-        self.assertIn("not implemented", err.getvalue())
+        self.assertIn("unknown", err.getvalue())
 
-    def test_compare_exit_2(self) -> None:
-        """--compare is not available yet and exits 2."""
+    def test_compare_needs_list(self) -> None:
+        """--compare without a comma-separated AI list exits 2."""
         err = io.StringIO()
         with redirect_stderr(err), redirect_stdout(io.StringIO()):
-            code = main_mod.main(["--compare"])
+            code = main_mod.main(
+                [
+                    "--compare",
+                    "--map",
+                    str(ROOT / "maps" / "small.txt"),
+                    "--zombie-ai",
+                    "random",
+                    "--games",
+                    "1",
+                ]
+            )
         self.assertEqual(code, 2)
+        self.assertIn("comma-separated", err.getvalue())
+
+    def test_compare_runs(self) -> None:
+        """--compare with two AIs prints a metrics table."""
+        out = io.StringIO()
+        with redirect_stdout(out):
+            code = main_mod.main(
+                [
+                    "--compare",
+                    "--map",
+                    str(ROOT / "maps" / "small.txt"),
+                    "--zombie-ai",
+                    "random,rulebased",
+                    "--human-ai",
+                    "random",
+                    "--healer-ai",
+                    "random",
+                    "--games",
+                    "2",
+                    "--rounds",
+                    "15",
+                    "--seed",
+                    "0",
+                ]
+            )
+        self.assertEqual(code, 0)
+        self.assertIn("win_rate", out.getvalue())
+        self.assertIn("random", out.getvalue())
 
     def test_bad_map_exit_2(self) -> None:
         """Missing map file exits 2."""

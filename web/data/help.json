@@ -1,0 +1,328 @@
+{
+  "settings": {
+    "map": {
+      "summary": "Which maze to play. Small (~10×10) has loops for evasion; medium (~20×15) has rooms, corridors and cost-2/3 tiles; large (~30×20) is Pac-Man style with dead ends.",
+      "default": "small",
+      "range": "small | medium | large",
+      "tip": "Start on small while learning; use medium/large when comparing search cost."
+    },
+    "n_zombies": {
+      "summary": "How many zombies start (at least 1). More zombies raise infection pressure.",
+      "default": "1",
+      "range": "≥ 1",
+      "tip": "Try 1 vs 3 zombies in the team-size experiment."
+    },
+    "n_humans": {
+      "summary": "Ordinary humans at start. Humans + healers must be at least 1.",
+      "default": "4",
+      "range": "≥ 0 (with healers covering the team)",
+      "tip": "More humans make full infection harder before the time limit."
+    },
+    "n_healers": {
+      "summary": "Healers at start (0 allowed). Healers count as human-team for wins.",
+      "default": "1",
+      "range": "≥ 0",
+      "tip": "Set to 0 for a pure infection race (healer ablation)."
+    },
+    "max_rounds": {
+      "summary": "Time limit in rounds. After the final round, zombies win only if they strictly outnumber the human team; a tie is a human win.",
+      "default": "60",
+      "range": "≥ 1",
+      "tip": "Lower rounds (e.g. 20) favors early aggression; higher favors survival."
+    },
+    "heal_cooldown": {
+      "summary": "After a heal at turn T, the next heal is allowed at turn T + cooldown. Cooldown ticks down at the start of each healer turn.",
+      "default": "3",
+      "range": "≥ 1 (try 1, 3, 5, 10)",
+      "tip": "Cooldown cooldown 1 vs 10 to see how much healing swings the game."
+    },
+    "seed": {
+      "summary": "Random seed for spawns and stochastic choices. Same seed + same AIs → identical games.",
+      "default": "0",
+      "range": "any integer",
+      "tip": "Use Random seed for variety; fix a seed when debugging."
+    },
+    "vision_radius": {
+      "summary": "Manhattan sight range. Off = full information. Walls block Bresenham line of sight. Own cell and adjacent floors are always visible.",
+      "default": "Off (full info)",
+      "range": "Off, or ≥ 1",
+      "tip": "Radius 2–3 makes the belief heat map useful."
+    },
+    "hidden_roles": {
+      "summary": "Other agents’ roles are hidden unless within identify range. Zombies never learn which agent is the healer (they always see healer as human).",
+      "default": "off",
+      "range": "on / off",
+      "tip": "Combine with low vision for partial-observability experiments."
+    },
+    "search_depth": {
+      "summary": "Lookahead depth (plies) for minimax, alpha-beta and expectimax. Browser cap is 3.",
+      "default": "2",
+      "range": "1–3 in the website",
+      "tip": "Depth 3 is stronger but slower — lower it if the UI feels stuck."
+    },
+    "zombie_ai": {
+      "summary": "Controller used by every zombie.",
+      "default": "rulebased",
+      "range": "manual, random, rulebased, bfs, dfs, ucs, greedy, astar, minimax, alphabeta, expectimax, qlearning",
+      "tip": "Use Compare tab to pit several zombie AIs against the same humans."
+    },
+    "human_ai": {
+      "summary": "Controller used by every ordinary human.",
+      "default": "rulebased",
+      "range": "same list as zombie AI",
+      "tip": "Set humans to manual to practice fleeing yourself."
+    },
+    "healer_ai": {
+      "summary": "Controller used by every healer.",
+      "default": "rulebased",
+      "range": "same list as zombie AI",
+      "tip": "Healer + low cooldown is the strongest human-side lever."
+    },
+    "heuristic": {
+      "summary": "Distance estimate for Greedy and A*: Manhattan (admissible), Euclidean (weaker), or maze distance (exact BFS steps, strongest).",
+      "default": "manhattan",
+      "range": "manhattan | euclidean | maze",
+      "tip": "Shown only when Greedy or A* is selected for a role."
+    },
+    "compare_games": {
+      "summary": "Number of games per AI in Compare mode (browser-capped for speed).",
+      "default": "10",
+      "range": "10–30",
+      "tip": "Use 10 for a quick feel; 30 for stabler win rates."
+    },
+    "compare_role": {
+      "summary": "Which role’s AI list is varied. Other roles stay on rule-based baselines.",
+      "default": "zombies",
+      "range": "zombies | humans | healer",
+      "tip": "Win rate is reported for that side’s wins."
+    },
+    "speed": {
+      "summary": "Playback speed when Play is running.",
+      "default": "5 actions/s",
+      "range": "1–20",
+      "tip": "Slow down to watch infections and heals."
+    },
+    "vision_overlay": {
+      "summary": "Dim cells the selected agent cannot currently see.",
+      "default": "off",
+      "range": "on / off",
+      "tip": "Click an agent on the board first to select them."
+    },
+    "belief_overlay": {
+      "summary": "Draw the selected agent’s danger belief map as translucent red.",
+      "default": "off",
+      "range": "on / off",
+      "tip": "Works best with limited vision after search agents have acted."
+    }
+  },
+  "agents": {
+    "manual": {
+      "summary": "You choose moves with the keyboard when it is that role’s turn. The game pauses and highlights the agent.",
+      "strong": "Useful for demos and for feeling the rules.",
+      "weak": "Not an AI baseline for experiments.",
+      "nodes": "No search — nodes expanded stays 0."
+    },
+    "random": {
+      "summary": "Picks uniformly among legal actions using a private seeded RNG.",
+      "strong": "Fast, deterministic with a seed, good weak baseline.",
+      "weak": "No goals; often walks into zombies or wastes healer turns.",
+      "nodes": "No search — nodes expanded is 0."
+    },
+    "rulebased": {
+      "summary": "Zombies greedily reduce terrain-weighted distance to the nearest visible human; humans maximize distance from zombies; healers heal when possible else flee.",
+      "strong": "Cheap and surprisingly effective on open maps.",
+      "weak": "Myopic; gets stuck in corridors; ignores long-term traps.",
+      "nodes": "No graph search — nodes expanded is 0."
+    },
+    "bfs": {
+      "summary": "Breadth-first pathfinding toward role goals (e.g. cells adjacent to prey for zombies).",
+      "strong": "Optimal in number of steps; predictable.",
+      "weak": "Ignores terrain costs; can expand many nodes on large maps.",
+      "nodes": "Counts nodes popped from the frontier while building a path."
+    },
+    "dfs": {
+      "summary": "Depth-first search with depth limit = map width × height.",
+      "strong": "Often finds some path quickly with little memory.",
+      "weak": "Not optimal; can take long detours.",
+      "nodes": "Counts expanded DFS nodes (not a quality signal)."
+    },
+    "ucs": {
+      "summary": "Uniform-cost search: optimal path cost when tiles have different movement costs.",
+      "strong": "Best on weighted maps where BFS is misleading.",
+      "weak": "Slightly heavier than BFS on uniform-cost floors.",
+      "nodes": "Expanded priority-queue nodes; compare with BFS on medium/large."
+    },
+    "greedy": {
+      "summary": "Greedy best-first search using only the heuristic h (Manhattan / Euclidean / maze).",
+      "strong": "Very fast toward the goal estimate.",
+      "weak": "Can be suboptimal; may tunnel into dead ends.",
+      "nodes": "Usually fewer than A*/UCS, but path quality may suffer."
+    },
+    "astar": {
+      "summary": "A* with f = g + h. Goal tested on pop; reopens if needed. With Manhattan (min cost 1) it is optimal.",
+      "strong": "Best quality/cost tradeoff for pathfinding; maze heuristic is strongest.",
+      "weak": "Maze distance caching costs memory/time to build.",
+      "nodes": "Expanded nodes; lower than UCS when the heuristic guides well."
+    },
+    "minimax": {
+      "summary": "Depth-limited adversarial search over the real turn order. Your team maximizes evaluate(); opponents minimize it.",
+      "strong": "Plans around enemy replies within the depth.",
+      "weak": "Branching factor explodes; slow above depth 2–3 in the browser.",
+      "nodes": "Game-tree nodes expanded — expect large numbers."
+    },
+    "alphabeta": {
+      "summary": "Minimax with alpha-beta pruning and move ordering (heals first, then toward/away from enemies).",
+      "strong": "Same value as minimax with fewer or equal expansions.",
+      "weak": "Still limited by depth and relevance-radius approximations.",
+      "nodes": "Should be ≤ minimax at the same depth — that is the pruning benefit."
+    },
+    "expectimax": {
+      "summary": "Like maximizer search, but random-moving opponents are chance nodes (uniform over legal moves). opponent_model can also be adversarial.",
+      "strong": "Better than minimax when foes are noisy/random.",
+      "weak": "Weaker if opponents play near-optimally.",
+      "nodes": "Chance branches expand every legal move — can be costly."
+    },
+    "qlearning": {
+      "summary": "Greedy policy from a tabular Q-table trained offline (JSON). Unseen states fall back to rule-based; stats report the unseen fraction.",
+      "strong": "Can beat baselines after enough training on a map/role.",
+      "weak": "Needs exported models; does not generalize across very different maps.",
+      "nodes": "No tree search; nodes expanded is 0 (look at unseen-state rate instead)."
+    },
+    "belief": {
+      "summary": "Belief tracker (used by search agents under limited vision): probability maps over cells for unseen agents, with a stay/move motion model and a danger map.",
+      "strong": "Lets agents chase or flee when enemies leave sight.",
+      "weak": "Wrong if motion assumptions fail; spreads uncertainty over time.",
+      "nodes": "Not a search algorithm — enable the Belief heat map overlay to visualize it."
+    }
+  },
+  "controls_table": [
+    {"control": "Start / Restart", "action": "Begin a new game with the current setup"},
+    {"control": "Play / Pause", "action": "Auto-advance actions at the speed slider rate"},
+    {"control": "Step", "action": "Advance exactly one agent action"},
+    {"control": "Step Round", "action": "Play until the current round ends (or a manual turn)"},
+    {"control": "Speed 1–20", "action": "Actions per second while playing"},
+    {"control": "Vision overlay", "action": "Dim cells the selected agent cannot see"},
+    {"control": "Belief heat map", "action": "Show danger probabilities for the selected agent"},
+    {"control": "Download replay", "action": "Save event history JSON"},
+    {"control": "Click agent", "action": "Select that agent for overlays and stats"},
+    {"control": "Arrow keys / WASD", "action": "Manual move (W/A/D; arrows)"},
+    {"control": "S or Space", "action": "Manual STAY"},
+    {"control": "Direction into zombie (healer)", "action": "Heal if cooldown is ready"}
+  ],
+  "glossary_terms": [
+    {"term": "Agent", "def": "One controlled character with a stable integer id and a role."},
+    {"term": "State", "def": "Full snapshot of the board, agents, round and counters."},
+    {"term": "Observation", "def": "What one agent is allowed to see when choosing an action."},
+    {"term": "Heuristic", "def": "Estimate of remaining path cost used by Greedy/A*."},
+    {"term": "Admissible", "def": "A heuristic that never overestimates true cost."},
+    {"term": "Node", "def": "A state (or cell) considered during search."},
+    {"term": "Nodes expanded", "def": "How many nodes were popped and expanded to choose a move."},
+    {"term": "Ply", "def": "One agent action in adversarial lookahead (follows real turn order)."},
+    {"term": "Epsilon", "def": "Exploration rate in Q-learning (random actions while learning)."},
+    {"term": "Q-value", "def": "Estimated long-term return for taking an action in a state."},
+    {"term": "Wilson interval", "def": "95% confidence interval for a win rate from n games."}
+  ],
+  "sections": {
+    "quick_start": {
+      "title": "Quick start",
+      "body": "Play a full game in five steps:",
+      "steps": [
+        "Choose a map (start with small).",
+        "Pick who controls zombies, humans and the healer (try rule-based first).",
+        "Press Start on the setup panel (or Start/Restart on the control bar).",
+        "Use Play/Pause, Step, or Step Round; click an agent to inspect overlays.",
+        "When the end banner appears, note the winner and reason — then Play again or Change settings."
+      ]
+    },
+    "how_to_run": {
+      "title": "How to run it",
+      "body": "Three ways to run the project:",
+      "blocks": [
+        {
+          "heading": "Online (GitHub Pages)",
+          "text": "Open https://erinabilal.github.io/zombie-apocalypse-ai/ in a current desktop browser (Chrome, Edge, Firefox or Safari). Wait for the loading screen while Pyodide starts — the first visit can take several seconds."
+        },
+        {
+          "heading": "Locally (static site)",
+          "text": "From the project root run: python tools/build_web.py  then  cd web  then  python -m http.server  and open http://localhost:8000 . Opening index.html by double-click (file://) will not work because the Worker must fetch the Python bundle."
+        },
+        {
+          "heading": "Headless command line",
+          "text": "python main.py --map maps/small.txt --seed 7 --quiet — plus flags for roles, AIs, vision, depth and heuristic. Exit code 0 on success, 2 on bad arguments."
+        },
+        {
+          "heading": "Tests",
+          "text": "python -m unittest discover -s tests -v  (must finish in under 60 seconds)."
+        }
+      ]
+    },
+    "settings_explained": {
+      "title": "Settings explained",
+      "body": "Every setup control has an i icon. Hover or click it for a short tip. Below: default, valid range, and how changing it shifts the game. Full detail also lives on those icons.",
+      "use_settings_table": true
+    },
+    "controls": {
+      "title": "Controls and keyboard shortcuts",
+      "body": "Playback and manual play controls:",
+      "use_controls_table": true
+    },
+    "ai_techniques": {
+      "title": "The AI techniques explained",
+      "body": "Each card summarizes how the technique works, when it is strong or weak, and what nodes expanded means for it. Search agents also use the belief tracker when vision is limited.",
+      "use_agent_cards": true
+    },
+    "reading_results": {
+      "title": "Reading the results",
+      "body": "Compare and Results tabs summarize many games:",
+      "bullets": [
+        "Win rate — fraction of games won by the side being compared; Wilson 95% intervals appear in exported experiment tables.",
+        "Average rounds — how long games last (early infections → fewer rounds).",
+        "Nodes expanded — search effort per move (log-scale charts help when values differ a lot).",
+        "Path cost — terrain cost of planned paths (UCS/A* care about this).",
+        "Time per move — wall-clock thinking time (adversarial agents are slowest).",
+        "Survivors / infections / heals — end-game composition and event counts.",
+        "Learning curve — for Q-learning: average reward and win rate vs episode as epsilon decays."
+      ]
+    },
+    "tips": {
+      "title": "Tips and suggested experiments",
+      "body": "Ideas that match the course report experiments:",
+      "bullets": [
+        "Set zombies to BFS and A* (and open Compare) — compare win rate and nodes expanded.",
+        "Turn healers to 0, then try cooldown 1 vs 10 with one healer.",
+        "Lower vision radius to 2; toggle belief heat map on a search agent.",
+        "Run alphabeta at depths 1–3 vs rulebased humans (watch pruning vs minimax).",
+        "Try UCS vs BFS on the medium map with weighted tiles.",
+        "Fix a seed, change only one AI name, and confirm the HUD/event log differences."
+      ]
+    },
+    "troubleshooting": {
+      "title": "Troubleshooting",
+      "body": "Common issues:",
+      "bullets": [
+        "Slow first load — Pyodide downloads once; wait for “ready”. Use Retry if it fails.",
+        "Nothing happens after Start — check the red error banner; rebuild with python tools/build_web.py and hard-refresh.",
+        "Adversarial moves slowly — set search depth to 1 or 2; Prefer alphabeta over minimax.",
+        "Game looks stuck — press Step; a manual role may be waiting for keyboard input.",
+        "file:// does not work — always use a local http.server or the Pages URL.",
+        "Q-learning falls back to rule-based if no model is loaded — run `python -m rl.train` and `python tools/export_models.py`.",
+        "Reset — change settings and Start again, or use Reset to defaults."
+      ]
+    },
+    "glossary": {
+      "title": "Glossary",
+      "body": "Terms used in the HUD and report:",
+      "use_glossary": true
+    },
+    "about": {
+      "title": "About",
+      "body": "Zombie Apocalypse AI is a university Artificial Intelligence course project by Erina Bilal and Maidah Tariq. It asks whether BFS/DFS/UCS, Greedy/A*, Minimax/Alpha-Beta/Expectimax and Q-learning can produce effective infect / survive / heal strategies in a maze, and which side the game favors under different settings.",
+      "bullets": [
+        "Technologies: Python 3.12 (stdlib core), Pyodide 0.26.4 in a Web Worker, Chart.js 4.4.1, static GitHub Pages.",
+        "Repository: https://github.com/erinabilal/zombie-apocalypse-ai",
+        "Live site: https://erinabilal.github.io/zombie-apocalypse-ai/",
+        "Team: Erina Bilal, Maidah Tariq"
+      ]
+    }
+  }
+}

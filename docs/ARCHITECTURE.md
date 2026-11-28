@@ -1,32 +1,38 @@
 # Architecture
 
-_Skeleton. Filled in as each build step is completed._
-
 ## Layers and import direction
 
 Imports only go downward:
 
 ```
-main.py / web / desktop_ui  ->  evaluation  ->  agents  ->  search, adversarial, rl  ->  game
+main.py / web  ->  evaluation  ->  agents  ->  search, adversarial, rl  ->  game
 ```
 
-`config.py` (GameConfig) sits at the repository root and may be imported by every layer, including `game/`.
+`config.py` (`GameConfig`) sits at the repository root and may be imported by every layer, including `game/`.
 `game/` never imports pygame, matplotlib, pandas, or any other project package besides `config`.
 
 ## Packages
 
-- `game/` (step 2 done): `entities`, `grid`, `state`, `rules`, `visibility` (Bresenham LOS,
-  `observe`, hidden roles), `engine` (seeded spawn, step/play_round/run, text render),
-  `serialization` (config/state/event/result ↔ JSON dicts). Controllers are injected via a
-  Protocol so `game/` never imports `agents/`.
-- `agents/` (step 5): baselines, `SearchAgent`, `BeliefTracker`, `AdversarialAgent`, `factory`
-  (through expectimax). AdversarialAgent rebuilds an approximate GameState from the observation.
-- `search/` (step 3): pathfinding algorithms and heuristics.
-- `adversarial/` (step 5): `evaluate` + WEIGHTS, minimax, alpha-beta, expectimax. Agents beyond
-  `relevance_radius` are treated as STAY (documented approximation).
-- `search/`: pathfinding algorithms and heuristics
-- `adversarial/`: minimax, alpha-beta, expectimax, evaluation function
-- `rl/`: environment, Q-learning, training
-- `agents/`: agents built on the above, plus the factory
-- `evaluation/`: metrics, experiments, compare mode, plots
-- `web/`: static website running the core through Pyodide in a Web Worker
+- **`game/`** — `entities`, `grid`, `state`, `rules`, `visibility` (Bresenham LOS, `observe`, hidden roles),
+  `engine` (seeded spawn, step/play_round/run, text render), `serialization` (config/state/event/result ↔ JSON).
+  Controllers are injected via a Protocol so `game/` never imports `agents/`.
+- **`search/`** — pathfinding: BFS, DFS, UCS, Greedy, A*, heuristics.
+- **`adversarial/`** — `evaluate` + WEIGHTS, minimax, alpha-beta, expectimax. Agents beyond
+  `relevance_radius` are forced to STAY in lookahead (documented approximation).
+- **`rl/`** — `ZombieEnv` (one learner, fixed opponents), tabular `QTable` (α=0.1, γ=0.95,
+  ε decay 1.0→0.05 over 60% of episodes), `rl.train` CLI, optional self-play stub.
+  Discrete state: own cell, clipped enemy offset, neighbor flags, cooldown/time buckets.
+- **`agents/`** — Random, RuleBased, Manual, SearchAgent, BeliefTracker, AdversarialAgent, RLAgent,
+  and `factory.make_agent`.
+- **`evaluation/`** — metrics (GameRecord, Wilson 95%, mean/std, CSV), seven experiment grids,
+  `run_experiments` CLI, `compare_mode` (paired seeds), optional matplotlib `plots`.
+  Export with `tools/export_results.py` → `web/data/results/`. The Pyodide bundle includes
+  `evaluation/metrics.py` and `evaluation/compare_mode.py`.
+- **`web/`** — static GitHub Pages site: Pyodide 0.26.4 Worker, Play / Compare / Results / Rules / Help.
+  Help copy in `web/data/help.json`; Q-tables in `web/data/models/`. Build with `python tools/build_web.py`.
+
+## Web runtime
+
+`tools/build_web.py` zips the stdlib core into `web/py_bundle.zip` and writes `web/data/maps.json`.
+Long jobs (full experiments, RL training) run locally; the site ships exported JSON results and models.
+Browser adversarial depth is capped at 3.

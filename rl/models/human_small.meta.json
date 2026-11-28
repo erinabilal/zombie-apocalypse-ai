@@ -1,0 +1,7 @@
+{
+  "role": "human",
+  "map": "small",
+  "episodes": 1000,
+  "final_avg_return": -8.243,
+  "states": 3514
+}

@@ -1,0 +1,10 @@
+{
+  "items": [
+    {
+      "id": "human_small",
+      "role": "human",
+      "map": "small",
+      "file": "./data/models/human_small.json"
+    }
+  ]
+}

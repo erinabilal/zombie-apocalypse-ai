@@ -39,6 +39,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--quiet", action="store_true")
     parser.add_argument("--desktop", action="store_true")
     parser.add_argument("--compare", action="store_true")
+    parser.add_argument(
+        "--compare-role",
+        default="zombie",
+        choices=["zombie", "human", "healer"],
+        help="Which role's AI list to vary in --compare mode",
+    )
     parser.add_argument("--games", type=int, default=200)
     return parser
 
@@ -57,6 +63,7 @@ def _load_map_text(path: str) -> str:
 
 _READY_AI = frozenset(
     {
+        "manual",
         "random",
         "rulebased",
         "bfs",
@@ -67,6 +74,7 @@ _READY_AI = frozenset(
         "minimax",
         "alphabeta",
         "expectimax",
+        "qlearning",
     }
 )
 
@@ -84,15 +92,22 @@ def _check_ai_implemented(name: str, role_label: str) -> None:
     raise CliError(f"unknown {role_label} AI {name!r}; choose one of: {', '.join(AGENT_NAMES)}")
 
 
+def _first_ai(value: str) -> str:
+    """Take the first name from a possibly comma-separated AI list."""
+    return value.split(",")[0].strip().lower()
+
+
 def config_from_args(args: argparse.Namespace) -> GameConfig:
     """Build a validated GameConfig from parsed CLI arguments."""
     if args.desktop:
         raise CliError("--desktop is not implemented yet (optional step 11)")
-    if args.compare:
-        raise CliError("--compare is not implemented yet (step 9)")
-    _check_ai_implemented(args.zombie_ai, "zombie")
-    _check_ai_implemented(args.human_ai, "human")
-    _check_ai_implemented(args.healer_ai, "healer")
+    # In compare mode the varied role may be a comma list; store the first as baseline.
+    zombie_ai = _first_ai(args.zombie_ai)
+    human_ai = _first_ai(args.human_ai)
+    healer_ai = _first_ai(args.healer_ai)
+    _check_ai_implemented(zombie_ai, "zombie")
+    _check_ai_implemented(human_ai, "human")
+    _check_ai_implemented(healer_ai, "healer")
     try:
         return GameConfig(
             map_text=_load_map_text(args.map_path),
@@ -104,14 +119,46 @@ def config_from_args(args: argparse.Namespace) -> GameConfig:
             seed=args.seed,
             vision_radius=args.vision,
             hidden_roles=bool(args.hidden_roles),
-            zombie_ai=args.zombie_ai.lower().strip(),
-            human_ai=args.human_ai.lower().strip(),
-            healer_ai=args.healer_ai.lower().strip(),
+            zombie_ai=zombie_ai,
+            human_ai=human_ai,
+            healer_ai=healer_ai,
             search_depth=args.depth,
             heuristic=args.heuristic,
+            move_time_limit=5.0,
+            node_budget=50_000,
         )
     except ValueError as exc:
         raise CliError(str(exc)) from exc
+
+
+def _compare_names(args: argparse.Namespace) -> list[str]:
+    """AI names to compare for the selected role (comma-separated)."""
+    role = args.compare_role
+    raw = {"zombie": args.zombie_ai, "human": args.human_ai, "healer": args.healer_ai}[role]
+    names = [n.strip().lower() for n in raw.split(",") if n.strip()]
+    if len(names) < 2:
+        raise CliError(
+            f"--compare needs a comma-separated --{role}-ai list with at least two names"
+        )
+    for name in names:
+        _check_ai_implemented(name, role)
+    return names
+
+
+def run_compare_cli(args: argparse.Namespace, config: GameConfig) -> int:
+    """Run compare mode and print a metrics table."""
+    from evaluation.compare_mode import compare_agents, format_compare_table
+
+    map_name = Path(args.map_path).stem
+    rows = compare_agents(
+        config,
+        _compare_names(args),
+        args.games,
+        role=args.compare_role,
+        map_name=map_name,
+    )
+    print(format_compare_table(rows))
+    return 0
 
 
 def build_controllers(config: GameConfig, engine: Engine) -> dict:
@@ -169,6 +216,8 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         config = config_from_args(args)
+        if args.compare:
+            return run_compare_cli(args, config)
         run_headless(config, quiet=bool(args.quiet))
         return 0
     except CliError as exc:

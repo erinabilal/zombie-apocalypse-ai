@@ -41,3 +41,13 @@ Decisions agreed with the project owner, with the reason for each.
     opponents minimize it (or are chance nodes under expectimax with `opponent_model=random`).
 16. **Relevance radius.** Agents farther than `relevance_radius` from the viewer are forced to STAY in
     the lookahead (approximation noted in ARCHITECTURE.md).
+17. **Web bundle.** `tools/build_web.py` zips `game/`, `agents/`, `search/`, `adversarial/`, `rl/`,
+    `evaluation/__init__.py`, `evaluation/metrics.py`, `evaluation/compare_mode.py`, root `config.py`,
+    and `web_api.py` (top-level in the zip). Pyodide is pinned to **0.26.4** on jsDelivr. Browser
+    search depth is capped at 3.
+18. **Experiments.** Seven named grids in `evaluation/experiments.py`. Paired seeds use `base_seed + i`.
+    CSVs are gitignored under `results/`; JSON exports under `web/data/results/` are committed for the
+    site. Plots require optional `matplotlib`; the Results tab charts from exported JSON via Chart.js either way.
+19. **Q-learning.** Tabular only (no DQN). State features and rewards follow the brief; human/healer
+    learner episodes end on infection. Unseen states fall back to `RuleBasedAgent`. Browser loads
+    exported models via `web_api.load_models_json`; without a table, `qlearning` still runs (fallback).

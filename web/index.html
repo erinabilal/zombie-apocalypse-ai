@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=1024" />
+  <title>Zombie Apocalypse AI</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
+</head>
+<body>
+  <div id="loading" class="loading" role="status">
+    <div class="loading-card">
+      <h1>Zombie Apocalypse AI</h1>
+      <p id="loading-msg">Loading Python runtime (Pyodide)…</p>
+      <div class="loading-bar"><div id="loading-bar-fill"></div></div>
+      <p class="hint">First load can take several seconds. Desktop browsers only (Chrome, Edge, Firefox, Safari).</p>
+      <button id="retry-btn" class="hidden" type="button">Retry</button>
+    </div>
+  </div>
+
+  <div id="shell" class="shell hidden">
+    <header class="topbar">
+      <div class="brand">Zombie Apocalypse AI</div>
+      <nav class="tabs" role="tablist" aria-label="Main">
+        <button type="button" class="tab-btn active" data-tab="play" role="tab" aria-selected="true">Play</button>
+        <button type="button" class="tab-btn" data-tab="compare" role="tab">Compare</button>
+        <button type="button" class="tab-btn" data-tab="results" role="tab">Results</button>
+        <button type="button" class="tab-btn" data-tab="rules" role="tab">Rules</button>
+        <button type="button" class="tab-btn" data-tab="help" role="tab">Help</button>
+      </nav>
+    </header>
+
+    <section id="tab-play" class="tab-panel">
+      <div class="play-layout">
+        <aside id="play-menu" class="panel setup"></aside>
+        <div class="stage">
+          <canvas id="board" width="640" height="480" aria-label="Game board" tabindex="0"></canvas>
+          <p id="manual-hint" class="manual-hint hidden">Manual turn — Arrow keys / WASD move · S or Space stay · healer: press direction toward an adjacent zombie</p>
+          <div id="play-controls"></div>
+          <div id="end-overlay" class="end-overlay hidden">
+            <div class="end-card">
+              <h2 id="end-title">Game over</h2>
+              <p id="end-detail"></p>
+              <button type="button" id="end-again" class="primary">Play again</button>
+              <button type="button" id="end-settings" class="secondary">Change settings</button>
+            </div>
+          </div>
+        </div>
+        <aside class="panel hud-panel">
+          <h2>HUD</h2>
+          <div id="hud"></div>
+          <h3>Event log</h3>
+          <ul id="event-log"></ul>
+        </aside>
+      </div>
+    </section>
+
+    <section id="tab-compare" class="tab-panel hidden">
+      <div class="compare-layout">
+        <aside id="compare-menu" class="panel"></aside>
+        <div class="panel compare-out">
+          <h2>Results</h2>
+          <table id="compare-table"></table>
+          <canvas id="chart-win" height="160"></canvas>
+          <p id="chart-win-cap" class="caption"></p>
+          <canvas id="chart-nodes" height="160"></canvas>
+          <p id="chart-nodes-cap" class="caption"></p>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-results" class="tab-panel hidden">
+      <div class="panel">
+        <h2>Experiment results</h2>
+        <div id="results-body"></div>
+      </div>
+    </section>
+
+    <section id="tab-rules" class="tab-panel hidden">
+      <div id="rules-root" class="panel wide"></div>
+    </section>
+
+    <section id="tab-help" class="tab-panel hidden">
+      <div id="help-root" class="panel wide"></div>
+    </section>
+  </div>
+
+  <div id="error-banner" class="error-banner hidden" role="alert"></div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
