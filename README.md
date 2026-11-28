@@ -11,7 +11,6 @@ Artificial Intelligence course project by Erina Bilal and Maidah Tariq.
 
 **https://erinabilal.github.io/zombie-apocalypse-ai/**
 
-(The repo may need to be **public** for free Pages. Workflow: `.github/workflows/deploy.yml`.)
 
 ## Game rules
 
@@ -25,7 +24,7 @@ Artificial Intelligence course project by Erina Bilal and Maidah Tariq.
 
 ## Installation
 
-Requires **Python 3.12+** (developed on 3.14; code stays 3.12-compatible). Core packages use the **standard library only**.
+Requires **Python 3.12+**. Core packages use the **standard library only**.
 
 ```bash
 git clone https://github.com/erinabilal/zombie-apocalypse-ai.git
@@ -90,26 +89,3 @@ A trained `human_small` table is already shipped under `rl/models/` and `web/dat
 ```bash
 python -m unittest discover -s tests -v
 ```
-
-## Project structure
-
-```
-config.py              GameConfig (frozen, validated)
-main.py                CLI headless + --compare
-game/                  Engine, rules, grid, visibility, serialization
-agents/                Baselines, search, adversarial, RL, factory
-search/                BFS/DFS/UCS, Greedy/A*, heuristics
-adversarial/           Evaluate, minimax, alpha-beta, expectimax
-rl/                    ZombieEnv, Q-learning, train CLI, models/
-evaluation/            Metrics, experiments, compare mode, plots
-maps/                  small.txt, medium.txt, large.txt
-web/                   Static GitHub Pages site (Pyodide Worker)
-tools/                 build_web, export_results, export_models
-tests/                 unittest suite
-docs/                  ARCHITECTURE.md, DECISIONS.md
-results/               Experiment CSVs (gitignored); summaries may be local
-```
-
-## Authors
-
-Erina Bilal and Maidah Tariq — university AI course project.
