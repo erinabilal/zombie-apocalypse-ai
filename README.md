@@ -5,11 +5,9 @@ infect every human before the time limit, humans try to survive, and a healer ca
 is controlled by an AI technique: uninformed search (BFS, DFS, UCS), informed search (Greedy, A*),
 adversarial search (Minimax, Alpha-Beta, Expectimax) and reinforcement learning (Q-learning).
 
-University Artificial Intelligence course project by Erina Bilal and Maidah Tariq.
+Artificial Intelligence course project by Erina Bilal and Maidah Tariq.
 
 ## Live site
-
-After GitHub Pages is enabled on this repository:
 
 **https://erinabilal.github.io/zombie-apocalypse-ai/**
 
