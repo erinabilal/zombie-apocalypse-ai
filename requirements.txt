@@ -1,0 +1,13 @@
+# The core packages (game/, agents/, search/, adversarial/, rl/, evaluation/metrics.py)
+# need ONLY the Python standard library. Nothing below is required to play or run tests.
+#
+# Optional: plots (evaluation/plots.py), tools/ and the Pygame desktop UI (desktop_ui/).
+# Exact versions will be pinned when these are first installed (with approval).
+matplotlib>=3.10
+numpy>=2.3
+pandas>=2.3
+pygame>=2.6
+
+# Optional development tools (formatting and linting, step 11)
+black>=25.1
+ruff>=0.12
